@@ -1,0 +1,71 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+}
+
+.item {
+  display: block;
+  aspect-ratio: 2/3;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  background: var(--cx-surface2);
+}
+
+.poster {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 4px;
+  opacity: 0;
+  transition: opacity var(--cx-transition);
+}
+
+.item:hover .overlay {
+  opacity: 1;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--cx-gold);
+}
+
+.more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 2/3;
+  border-radius: 4px;
+  background: var(--cx-surface2);
+  border: 1px dashed var(--cx-border2);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cx-text3);
+  transition: color var(--cx-transition), border-color var(--cx-transition);
+}
+
+.more:hover {
+  color: var(--cx-text2);
+  border-color: var(--cx-border3);
+}
+
+.empty {
+  padding: 20px 0;
+  text-align: center;
+  color: var(--cx-text3);
+  font-size: 12px;
+}

@@ -1,0 +1,145 @@
+.card {
+  display: flex;
+  gap: 14px;
+  background: var(--cx-surface);
+  border: 1px solid var(--cx-border);
+  border-radius: var(--cx-radius);
+  padding: 16px;
+  transition: border-color var(--cx-transition);
+  animation: fadeIn 0.2s ease;
+}
+
+.card:hover {
+  border-color: var(--cx-border2);
+}
+
+.poster {
+  width: 64px;
+  flex-shrink: 0;
+  aspect-ratio: 2/3;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--cx-surface2);
+  display: block;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.userRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--cx-gradient);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar span {
+  font-size: 10px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.displayName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cx-text);
+  transition: color var(--cx-transition);
+}
+
+.userRow:hover .displayName { color: var(--cx-red); }
+
+.action {
+  font-size: 12px;
+  color: var(--cx-text3);
+}
+
+.time {
+  font-size: 11px;
+  color: var(--cx-text3);
+  margin-left: auto;
+}
+
+/* Film title */
+.filmTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cx-text);
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  line-height: 1.3;
+  transition: color var(--cx-transition);
+}
+
+.filmTitle:hover { color: var(--cx-red); }
+
+.filmYear {
+  font-size: 12px;
+  color: var(--cx-text3);
+  font-weight: 400;
+}
+
+/* Review */
+.review {
+  font-size: 13px;
+  color: var(--cx-text2);
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Footer */
+.footer {
+  display: flex;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.actionBtn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--cx-text3);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: color var(--cx-transition);
+}
+
+.actionBtn:hover {
+  color: var(--cx-text2);
+}

@@ -1,0 +1,39 @@
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--cx-text2);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--cx-border2);
+  cursor: pointer;
+  transition: color var(--cx-transition), background var(--cx-transition), border-color var(--cx-transition);
+  white-space: nowrap;
+}
+
+.pill:hover {
+  color: var(--cx-text);
+  background: var(--cx-surface2);
+  border-color: var(--cx-border3);
+}
+
+/* Active states */
+.active.red {
+  background: var(--cx-red-dim);
+  border-color: var(--cx-red);
+  color: #f87fa0;
+}
+
+.active.blue {
+  background: var(--cx-blue-dim);
+  border-color: var(--cx-blue);
+  color: #82b4fb;
+}
+
+.active.neutral {
+  background: var(--cx-surface2);
+  border-color: var(--cx-border3);
+  color: var(--cx-text);
+}

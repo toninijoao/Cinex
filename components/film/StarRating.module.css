@@ -1,0 +1,40 @@
+.stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.star {
+  background: none;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  cursor: default;
+  flex-shrink: 0;
+}
+
+.interactive {
+  cursor: pointer;
+  transition: transform var(--cx-transition);
+}
+
+.interactive:hover:not(:disabled) {
+  transform: scale(1.1);
+}
+
+/* Sizes */
+.sm .star svg { width: 14px; height: 14px; }
+.md .star svg { width: 18px; height: 18px; }
+.lg .star svg { width: 26px; height: 26px; }
+
+.sm svg { width: 14px; height: 14px; }
+.md svg { width: 18px; height: 18px; }
+.lg svg { width: 26px; height: 26px; }
+
+.value {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cx-gold);
+  margin-left: 6px;
+}

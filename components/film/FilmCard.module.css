@@ -1,0 +1,117 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.posterLink {
+  display: block;
+}
+
+.poster {
+  position: relative;
+  aspect-ratio: 2 / 3;
+  border-radius: var(--cx-radius-sm);
+  overflow: hidden;
+  background: var(--cx-surface2);
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 10px;
+  animation: fadeIn 0.15s ease;
+}
+
+.avgRating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cx-gold);
+}
+
+.statusBadge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.statusBadge.watched     { background: var(--cx-red-dim); color: var(--cx-red); }
+.statusBadge.want_to_watch { background: var(--cx-blue-dim); color: var(--cx-blue); }
+.statusBadge.watching    { background: rgba(34,197,94,0.18); color: var(--cx-success); }
+.statusBadge.rewatching  { background: var(--cx-red-dim); color: var(--cx-red); }
+.statusBadge.dropped     { background: rgba(239,68,68,0.18); color: var(--cx-danger); }
+
+.addBtn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--cx-red);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  transition: background var(--cx-transition), transform var(--cx-transition);
+}
+
+.addBtn:hover {
+  background: var(--cx-red-hover);
+  transform: scale(1.1);
+}
+
+/* Card info */
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.title {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--cx-text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.4;
+  transition: color var(--cx-transition);
+}
+
+.title:hover { color: var(--cx-red); }
+
+.year {
+  font-size: 11px;
+  color: var(--cx-text3);
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  color: var(--cx-gold);
+  font-weight: 500;
+}
+
+.count {
+  color: var(--cx-text3);
+  font-weight: 400;
+}
+
+/* Sizes */
+.sm .title { font-size: 11px; }
+.lg .title { font-size: 13px; }

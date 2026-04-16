@@ -1,0 +1,25 @@
+.page { padding: 40px 0 60px; }
+
+.title {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--cx-text);
+  margin-bottom: 6px;
+}
+
+.sub {
+  font-size: 13px;
+  color: var(--cx-text3);
+  margin-bottom: 28px;
+}
+
+.feed {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cardSk {
+  height: 120px;
+  border-radius: var(--cx-radius);
+}
