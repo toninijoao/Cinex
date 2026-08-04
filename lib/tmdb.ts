@@ -109,7 +109,8 @@ export interface TmdbCrewMember {
 
 export async function getFilmDetails(tmdbId: number): Promise<TmdbFilmDetail> {
   return tmdbFetch<TmdbFilmDetail>(`/movie/${tmdbId}`, {
-    append_to_response: 'videos,credits',
+    append_to_response: 'videos,credits,images',
+    include_image_language: 'en,pt,null',
   })
 }
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { use } from 'react'
 import Link from 'next/link'
 import StarRating from '@/components/film/StarRating'
@@ -25,6 +25,42 @@ export default function FilmDetailPage({ params }: { params: Promise<{ id: strin
   const [shelfOpen, setShelfOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const [trailerOpen, setTrailerOpen] = useState(false)
+  const [activeImageIndex, setActiveImageIndex] = useState(0)
+
+  const castScrollRef = useRef<HTMLDivElement>(null)
+
+  const scrollCast = (direction: 'left' | 'right') => {
+    if (!castScrollRef.current) return
+    const container = castScrollRef.current
+    const scrollAmount = 400
+    const { scrollLeft, scrollWidth } = container
+    const singleWidth = scrollWidth / 3
+
+    if (direction === 'right') {
+      if (scrollLeft + scrollAmount >= 2 * singleWidth) {
+        container.scrollLeft = scrollLeft - singleWidth
+      }
+      container.scrollBy({
+        left: scrollAmount,
+        behavior: 'smooth',
+      })
+    } else {
+      if (scrollLeft - scrollAmount < singleWidth) {
+        container.scrollLeft = scrollLeft + singleWidth
+      }
+      container.scrollBy({
+        left: -scrollAmount,
+        behavior: 'smooth',
+      })
+    }
+  }
+
+  useEffect(() => {
+    if (cast.length > 0 && castScrollRef.current) {
+      const container = castScrollRef.current
+      container.scrollLeft = container.scrollWidth / 3
+    }
+  }, [cast])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -77,6 +113,14 @@ export default function FilmDetailPage({ params }: { params: Promise<{ id: strin
     if (!isNaN(tmdbId)) fetchData()
   }, [tmdbId])
 
+  useEffect(() => {
+    if (!film?.images || film.images.length <= 1) return
+    const interval = setInterval(() => {
+      setActiveImageIndex(prev => (prev + 1) % film.images.length)
+    }, 4000)
+    return () => clearInterval(interval)
+  }, [film?.images])
+
   const directors = crew.filter(c => c.job === 'director')
   const writers   = crew.filter(c => c.job === 'writer')
 
@@ -127,12 +171,21 @@ export default function FilmDetailPage({ params }: { params: Promise<{ id: strin
         {/* Main content */}
         <div className={styles.main}>
           {/* Poster */}
-          <div className={styles.poster}>
+          <a
+            href={`https://www.google.com/search?q=${encodeURIComponent(film.title)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.poster}
+          >
             <PosterImage src={film.poster_url_lg} alt={film.title} />
             {film.trailer_url && (
               <button
                 className={styles.trailerBtn}
-                onClick={() => setTrailerOpen(true)}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  setTrailerOpen(true)
+                }}
                 id="film-trailer-btn"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -141,7 +194,7 @@ export default function FilmDetailPage({ params }: { params: Promise<{ id: strin
                 Ver trailer
               </button>
             )}
-          </div>
+          </a>
 
           {/* Info */}
           <div className={styles.info}>
@@ -228,6 +281,7 @@ export default function FilmDetailPage({ params }: { params: Promise<{ id: strin
                   size="lg"
                   onClick={() => setShelfOpen(true)}
                   id="film-add-shelf-btn"
+                  className={styles.addShelfBtn}
                 >
                   + Adicionar à estante
                 </Button>
@@ -240,27 +294,109 @@ export default function FilmDetailPage({ params }: { params: Promise<{ id: strin
         {cast.length > 0 && (
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>Elenco</h2>
-            <div className={styles.castScroll}>
-              {cast.map((member: any) => (
-                <div key={member.tmdb_id} className={styles.castCard}>
-                  <div className={styles.castPhoto}>
-                    {member.profile_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={member.profile_url} alt={member.name} />
-                    ) : (
-                      <div className={styles.castNoPhoto}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                          <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
-                        </svg>
-                      </div>
+            <div className={styles.castWrapper}>
+              <button
+                className={`${styles.castArrow} ${styles.castArrowLeft}`}
+                onClick={() => scrollCast('left')}
+                aria-label="Rolar para esquerda"
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                </svg>
+              </button>
+
+              <div className={styles.castScroll} ref={castScrollRef}>
+                {[...cast, ...cast, ...cast].map((member: any, idx: number) => (
+                  <div key={`${member.tmdb_id}-${idx}`} className={styles.castCard}>
+                    <div className={styles.castPhoto}>
+                      {member.profile_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={member.profile_url} alt={member.name} />
+                      ) : (
+                        <div className={styles.castNoPhoto}>
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                            <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                    <div className={styles.castName}>{member.name}</div>
+                    {member.character && (
+                      <div className={styles.castCharacter}>{member.character}</div>
                     )}
                   </div>
-                  <div className={styles.castName}>{member.name}</div>
-                  {member.character && (
-                    <div className={styles.castCharacter}>{member.character}</div>
-                  )}
+                ))}
+              </div>
+
+              <button
+                className={`${styles.castArrow} ${styles.castArrowRight}`}
+                onClick={() => scrollCast('right')}
+                aria-label="Rolar para direita"
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                </svg>
+              </button>
+            </div>
+          </section>
+        )}
+
+        {/* Images Carousel */}
+        {film.images && film.images.length > 0 && (
+          <section className={styles.carouselSection}>
+            <h2 className={styles.sectionTitle}>Cliques de {film.title}</h2>
+            <div className={styles.carouselContainer}>
+              <div className={styles.carouselTrack}>
+                 {film.images.map((imgUrl: string, idx: number) => {
+                  const total = film.images.length
+                  let diff = idx - activeImageIndex
+                  if (diff > total / 2) diff -= total
+                  if (diff < -total / 2) diff += total
+
+                  let slideClass = styles.carouselSlide
+                  if (diff === 0) {
+                    slideClass += ` ${styles.carouselSlideActive}`
+                  } else if (diff === -1) {
+                    slideClass += ` ${styles.carouselSlideLeft}`
+                  } else if (diff === 1) {
+                    slideClass += ` ${styles.carouselSlideRight}`
+                  } else if (diff < -1) {
+                    slideClass += ` ${styles.carouselSlideFarLeft}`
+                  } else {
+                    slideClass += ` ${styles.carouselSlideFarRight}`
+                  }
+
+                  const isLeft = diff === -1
+                  const isRight = diff === 1
+
+                  return (
+                    <div
+                      key={idx}
+                      className={slideClass}
+                      onClick={() => {
+                        if (isLeft) setActiveImageIndex((activeImageIndex - 1 + total) % total)
+                        if (isRight) setActiveImageIndex((activeImageIndex + 1) % total)
+                      }}
+                    >
+                      <img src={imgUrl} alt={`${film.title} - Foto ${idx + 1}`} loading="lazy" />
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* Indicators */}
+              {film.images.length > 1 && (
+                <div className={styles.carouselDots}>
+                  {film.images.map((_: any, idx: number) => (
+                    <button
+                      key={idx}
+                      className={`${styles.carouselDot} ${idx === activeImageIndex ? styles.carouselDotActive : ''}`}
+                      onClick={() => setActiveImageIndex(idx)}
+                      aria-label={`Ir para foto ${idx + 1}`}
+                    />
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
           </section>
         )}

@@ -35,12 +35,36 @@ export async function GET(
         profile_url: profileUrl(m.profile_path),
       }))
 
+    const backdrops = (film as any).images?.backdrops ?? []
+    // Filter out backdrops without file_path and skip the first one to avoid duplicate of the header background
+    const validBackdrops = backdrops.filter((b: any) => b.file_path).slice(1)
+    const sampleSize = 10
+    const poolSize = Math.min(validBackdrops.length, 100)
+    const images: string[] = []
+
+    if (poolSize > 0) {
+      if (poolSize <= sampleSize) {
+        validBackdrops.slice(0, poolSize).forEach((b: any) => {
+          const url = backdropUrl(b.file_path, 'w780')
+          if (url) images.push(url)
+        })
+      } else {
+        const step = poolSize / sampleSize
+        for (let i = 0; i < sampleSize; i++) {
+          const idx = Math.min(Math.floor(i * step), poolSize - 1)
+          const url = backdropUrl(validBackdrops[idx].file_path, 'w780')
+          if (url) images.push(url)
+        }
+      }
+    }
+
     return NextResponse.json({
       film: {
         ...mapped,
         genres: film.genres,
         poster_url_lg: posterUrl(film.poster_path, 'w500'),
         backdrop_url_full: backdropUrl(film.backdrop_path, 'original'),
+        images,
       },
       cast,
       crew,

@@ -58,16 +58,11 @@ export default function ExplorePage() {
           params.set('primary_release_date.gte', `${startYear}-01-01`)
           params.set('primary_release_date.lte', `${endYear}-12-31`)
         }
-        if (sortBy === 'popular') params.set('sort_by', 'popularity.desc')
+        if (sortBy === 'popular') params.set('sort_by', 'vote_count.desc')
         else if (sortBy === 'rating') params.set('sort_by', 'vote_average.desc')
         else params.set('sort_by', 'primary_release_date.desc')
 
-        const res = await fetch(`/api/tmdb/search?q=${encodeURIComponent(selectedGenre ? 'all' : 'popular')}&page=${page}`)
-        const json = await res.json()
-        setFilms(json.results ?? [])
-        setTotalPages(json.total_pages ?? 1)
-        setLoading(false)
-        return
+        url = `/api/tmdb/discover?${params.toString()}`
       }
 
       const res = await fetch(url)

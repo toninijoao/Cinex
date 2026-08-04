@@ -35,7 +35,7 @@
 }
 
 .posterSk {
-  width: 220px;
+  width: 320px;
   flex-shrink: 0;
   aspect-ratio: 2/3;
   border-radius: 10px;
@@ -61,7 +61,7 @@
 
 /* Poster */
 .poster {
-  width: 220px;
+  width: 320px;
   flex-shrink: 0;
   border-radius: 10px;
   overflow: hidden;
@@ -69,6 +69,15 @@
   aspect-ratio: 2/3;
   box-shadow: 0 8px 32px rgba(0,0,0,0.5);
   position: relative;
+  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+              filter 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+              box-shadow 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.poster:hover {
+  transform: scale(1.04);
+  filter: brightness(1.1);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.65);
 }
 
 .trailerBtn {
@@ -237,12 +246,22 @@
 }
 
 /* Cast scroll */
+.castWrapper {
+  position: relative;
+  width: 100%;
+}
+
 .castScroll {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   overflow-x: auto;
-  padding-bottom: 8px;
-  scrollbar-width: thin;
+  padding: 4px 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.castScroll::-webkit-scrollbar {
+  display: none;
 }
 
 .castCard {
@@ -290,6 +309,55 @@
   color: var(--cx-text3);
   text-align: center;
   line-height: 1.3;
+}
+
+/* Cast Navigation Arrows */
+.castArrow {
+  position: absolute;
+  top: 45px;
+  transform: translateY(-50%);
+  background: var(--cx-red);
+  color: var(--cx-text);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  transition: background-color var(--cx-transition), transform var(--cx-transition), opacity var(--cx-transition);
+  border: none;
+}
+
+.castArrow svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.castArrow:hover {
+  background: var(--cx-red-hover);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.castArrow:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.castArrowLeft {
+  left: -16px;
+}
+
+.castArrowRight {
+  right: -16px;
+}
+
+@media (max-width: 768px) {
+  .castArrow {
+    display: none;
+  }
 }
 
 /* Reviews */
@@ -343,5 +411,201 @@
 @media (max-width: 768px) {
   .main { flex-direction: column; }
   .poster { width: 160px; }
+  .posterSk { width: 160px; }
   .title { font-size: 22px; }
 }
+
+/* Carousel */
+.carouselSection {
+  margin-top: 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.carouselSection :global(.sectionTitle),
+.carouselSection h2 {
+  align-self: flex-start;
+  width: 100%;
+}
+
+.carouselContainer {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  height: 320px; /* Fixed height on desktop to match original size height */
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  background: var(--cx-surface2);
+  border: 1px solid var(--cx-border);
+}
+
+.carouselTrack {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.carouselSlide {
+  position: absolute;
+  width: 50%; /* 50% on desktop to leave room for wider side spreads */
+  height: 90%;
+  top: 50%;
+  left: 50%;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.5);
+  filter: blur(8px) brightness(0.4);
+  transition: left 0.8s cubic-bezier(0.25, 1, 0.5, 1), 
+              transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), 
+              opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), 
+              filter 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+  z-index: 0;
+}
+
+.carouselSlideActive {
+  opacity: 1;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1.0);
+  filter: blur(0px) brightness(1.0);
+  pointer-events: auto;
+  z-index: 3;
+}
+
+.carouselSlideLeft {
+  opacity: 0.55;
+  left: 6%; /* Spread out on the left side of desktop width */
+  transform: translate(-50%, -50%) scale(0.75);
+  filter: blur(3px) brightness(0.5);
+  pointer-events: auto;
+  z-index: 1;
+  cursor: pointer;
+}
+
+.carouselSlideRight {
+  opacity: 0.55;
+  left: 94%; /* Spread out on the right side of desktop width */
+  transform: translate(-50%, -50%) scale(0.75);
+  filter: blur(3px) brightness(0.5);
+  pointer-events: auto;
+  z-index: 1;
+  cursor: pointer;
+}
+
+.carouselSlideFarLeft {
+  opacity: 0;
+  left: -40%;
+  transform: translate(-50%, -50%) scale(0.5);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.carouselSlideFarRight {
+  opacity: 0;
+  left: 140%;
+  transform: translate(-50%, -50%) scale(0.5);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.carouselSlide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.06);
+}
+
+.carouselSlideActive img {
+  animation: zoomActive 4s linear forwards;
+}
+
+.carouselContainer:hover .carouselSlideActive {
+  transform: translate(-50%, -50%) scale(1.03);
+  filter: brightness(1.18);
+}
+
+@media (max-width: 768px) {
+  .carouselContainer {
+    height: auto;
+    aspect-ratio: 2.2 / 1;
+  }
+
+  .carouselSlide {
+    width: 72%;
+  }
+
+  .carouselSlideLeft {
+    left: -11%;
+    transform: translate(-50%, -50%) scale(0.7);
+  }
+
+  .carouselSlideRight {
+    left: 111%;
+    transform: translate(-50%, -50%) scale(0.7);
+  }
+
+  .carouselSlideFarLeft {
+    left: -70%;
+  }
+
+  .carouselSlideFarRight {
+    left: 170%;
+  }
+}
+
+@keyframes zoomActive {
+  from {
+    transform: scale(1.0);
+  }
+  to {
+    transform: scale(1.06);
+  }
+}
+
+/* Dots indicator */
+.carouselDots {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+}
+
+.carouselDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: all var(--cx-transition);
+}
+
+.carouselDotActive {
+  background: var(--cx-red);
+  width: 18px;
+  border-radius: 4px;
+}
+
+.addShelfBtn {
+  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+              background-color 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+              box-shadow 0.3s cubic-bezier(0.25, 1, 0.5, 1) !important;
+}
+
+.addShelfBtn:hover {
+  transform: scale(1.04) !important;
+  box-shadow: 0 4px 15px rgba(232, 41, 74, 0.3) !important;
+}
+
+.addShelfBtn:active {
+  transform: scale(0.98) !important;
+}
+
