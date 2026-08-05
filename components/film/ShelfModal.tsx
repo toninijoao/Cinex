@@ -35,6 +35,8 @@ interface ShelfModalProps {
     review: string | null
     is_public: boolean
     watched_at: string | null
+    best_actor_tmdb_id?: number | null
+    best_actor_name?: string | null
   } | null
   onSaved?: () => void
 }
@@ -63,8 +65,10 @@ export default function ShelfModal({
   const [status, setStatus]     = useState<ShelfStatus>(existingEntry?.status ?? 'watched')
   const [rating, setRating]     = useState<number>(existingEntry?.rating ?? 0)
   const [review, setReview]     = useState(existingEntry?.review ?? '')
-  const [isPublic, setIsPublic] = useState(existingEntry?.is_public ?? true)
-  const [watchedAt, setWatchedAt] = useState(existingEntry?.watched_at?.slice(0, 10) ?? todayString())
+  const [bestActorTmdbId, setBestActorTmdbId] = useState<number | null>(existingEntry?.best_actor_tmdb_id ?? null)
+  const [bestActorName, setBestActorName] = useState<string | null>(existingEntry?.best_actor_name ?? null)
+  const [cast, setCast] = useState<any[]>([])
+  const [loadingCast, setLoadingCast] = useState(false)
   const [loading, setLoading]   = useState(false)
   const [error, setError]       = useState<string | null>(null)
 
@@ -74,17 +78,35 @@ export default function ShelfModal({
       setStatus(existingEntry.status)
       setRating(existingEntry.rating ?? 0)
       setReview(existingEntry.review ?? '')
-      setIsPublic(existingEntry.is_public)
-      setWatchedAt(existingEntry.watched_at?.slice(0, 10) ?? todayString())
+      setBestActorTmdbId(existingEntry.best_actor_tmdb_id ?? null)
+      setBestActorName(existingEntry.best_actor_name ?? null)
     } else {
       setStatus('watched')
       setRating(0)
       setReview('')
-      setIsPublic(true)
-      setWatchedAt(todayString())
+      setBestActorTmdbId(null)
+      setBestActorName(null)
     }
     setError(null)
   }, [film.tmdb_id, existingEntry])
+
+  // Fetch film cast when modal is open
+  useEffect(() => {
+    if (!isOpen) return
+    const fetchCast = async () => {
+      setLoadingCast(true)
+      try {
+        const res = await fetch(`/api/tmdb/film/${film.tmdb_id}`)
+        const json = await res.json()
+        setCast(json.cast ?? [])
+      } catch (err) {
+        console.error('Error fetching film cast for best actor selector:', err)
+      } finally {
+        setLoadingCast(false)
+      }
+    }
+    fetchCast()
+  }, [isOpen, film.tmdb_id])
 
   const showRating  = status === 'watched' || status === 'rewatching'
   const showDate    = status === 'watched' || status === 'rewatching'
@@ -105,13 +127,31 @@ export default function ShelfModal({
     const res = await fetch(`/api/tmdb/film/${film.tmdb_id}`)
     const json = await res.json()
 
+    const filmToCache = {
+      tmdb_id: film.tmdb_id,
+      title: json.film.title,
+      original_title: json.film.original_title,
+      release_year: json.film.release_year,
+      runtime_minutes: json.film.runtime_minutes,
+      synopsis: json.film.synopsis,
+      poster_url: json.film.poster_url,
+      backdrop_url: json.film.backdrop_url,
+      trailer_url: json.film.trailer_url,
+      tmdb_vote_average: json.film.tmdb_vote_average,
+      origin_country: json.film.origin_country,
+      synced_at: json.film.synced_at || new Date().toISOString(),
+    }
+
     const { data: inserted, error: insertErr } = await supabase
       .from('films')
-      .upsert({ ...json.film, tmdb_id: film.tmdb_id }, { onConflict: 'tmdb_id' })
+      .upsert(filmToCache, { onConflict: 'tmdb_id' })
       .select('id')
       .single()
 
-    if (insertErr || !inserted) throw new Error('Could not cache film')
+    if (insertErr || !inserted) {
+      console.error('Failed to cache film in DB:', insertErr)
+      throw new Error('Could not cache film')
+    }
     return inserted.id
   }
 
@@ -138,8 +178,10 @@ export default function ShelfModal({
         status,
         rating: showRating && rating > 0 ? rating : null,
         review: review.trim() || null,
-        is_public: isPublic,
-        watched_at: showDate ? watchedAt : null,
+        is_public: true,
+        watched_at: showDate ? todayString() : null,
+        best_actor_tmdb_id: showRating ? bestActorTmdbId : null,
+        best_actor_name: showRating ? bestActorName : null,
       }
 
       const { error: upsertErr } = await supabase
@@ -256,52 +298,68 @@ export default function ShelfModal({
           <span className={styles.charCount}>{review.length}/2000</span>
         </div>
 
-        {/* Date watched */}
-        {showDate && (
+        {/* Elect Best Actor — only for watched/rewatching */}
+        {showRating && (
           <div className={styles.field}>
-            <label htmlFor="shelf-date" className={styles.label}>Data assistido</label>
-            <input
-              id="shelf-date"
-              type="date"
-              className={styles.dateInput}
-              value={watchedAt}
-              onChange={e => setWatchedAt(e.target.value)}
-              max={todayString()}
-            />
+            <label className={styles.label}>
+              Melhor Atuação <span className={styles.optional}>(opcional)</span>
+            </label>
+            {loadingCast ? (
+              <p style={{ fontSize: '12px', color: 'var(--cx-text3)' }}>Carregando elenco...</p>
+            ) : cast.length === 0 ? (
+              <p style={{ fontSize: '12px', color: 'var(--cx-text3)' }}>Elenco não disponível.</p>
+            ) : (
+              <div className={styles.castCarousel}>
+                {cast.map((actor: any) => {
+                  const isSelected = bestActorTmdbId === actor.tmdb_id
+                  return (
+                    <button
+                      key={actor.tmdb_id}
+                      type="button"
+                      className={`${styles.actorCard} ${isSelected ? styles.actorCardActive : ''}`}
+                      onClick={() => {
+                        if (isSelected) {
+                          setBestActorTmdbId(null)
+                          setBestActorName(null)
+                        } else {
+                          setBestActorTmdbId(actor.tmdb_id)
+                          setBestActorName(actor.name)
+                        }
+                      }}
+                    >
+                      {isSelected && (
+                        <div className={styles.selectedBadge} title="Selecionado">
+                          🏆
+                        </div>
+                      )}
+                      <div className={styles.actorAvatarWrap}>
+                        {actor.profile_url ? (
+                          <img
+                            src={actor.profile_url}
+                            alt={actor.name}
+                            className={styles.actorAvatar}
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className={styles.actorAvatarFallback}>👤</div>
+                        )}
+                      </div>
+                      <div className={styles.actorName}>{actor.name}</div>
+                      {actor.character && (
+                        <div className={styles.actorCharacter} title={actor.character}>
+                          {actor.character}
+                        </div>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+            <p style={{ fontSize: '11px', color: 'var(--cx-text3)', marginTop: '2px' }}>
+              O ator ou atriz eleito(a) ganhará +1 Cinex Point! clique para selecionar ou desmarcar.
+            </p>
           </div>
         )}
-
-        {/* Privacy toggle */}
-        <div className={styles.row}>
-          <span className={styles.label}>Visibilidade</span>
-          <div className={styles.toggle}>
-            <button
-              type="button"
-              id="shelf-privacy-toggle"
-              onClick={() => setIsPublic(v => !v)}
-              className={`${styles.toggleBtn} ${isPublic ? styles.togglePublic : styles.togglePrivate}`}
-              aria-pressed={isPublic}
-            >
-              {isPublic ? (
-                <>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                    <circle cx="12" cy="12" r="3"/>
-                  </svg>
-                  Público
-                </>
-              ) : (
-                <>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-                    <line x1="1" y1="1" x2="23" y2="23"/>
-                  </svg>
-                  Privado
-                </>
-              )}
-            </button>
-          </div>
-        </div>
 
         {/* Error */}
         {error && <p className={styles.error}>{error}</p>}

@@ -6,6 +6,7 @@ import Link from 'next/link'
 import FilmCard from '@/components/film/FilmCard'
 import ShelfModal from '@/components/film/ShelfModal'
 import { FilmIcon, UserIcon } from '@/components/ui/Icons'
+import { getHighResAvatarUrl } from '@/lib/avatar'
 import styles from './page.module.css'
 
 type SearchTab = 'films' | 'users'
@@ -124,7 +125,7 @@ export default function SearchPageContent() {
                 <Link key={u.id} href={`/profile/${u.username}`} className={styles.userCard} id={`search-user-${u.username}`}>
                   <div className={styles.userAvatar}>
                     {u.avatar_url
-                      ? <img src={u.avatar_url} alt={u.display_name} />
+                      ? <img src={getHighResAvatarUrl(u.avatar_url) || ''} alt={u.display_name} />
                       : <span>{(u.display_name ?? u.username ?? 'U')[0].toUpperCase()}</span>
                     }
                   </div>

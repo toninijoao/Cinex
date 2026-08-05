@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -11,6 +11,8 @@ import styles from '../auth.module.css'
 export default function RegisterPage() {
   const router = useRouter()
   const supabase = createClient()
+
+  const [redirectTo, setRedirectTo] = useState('/')
   const [displayName, setDisplayName] = useState('')
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
@@ -18,6 +20,17 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+
+  // Read search parameters safely on client side
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      const redirect = params.get('redirectTo')
+      if (redirect) {
+        setRedirectTo(redirect)
+      }
+    }
+  }, [])
 
   function slugify(val: string) {
     return val.toLowerCase().replace(/[^a-z0-9_]/g, '_').replace(/__+/g, '_').slice(0, 30)
@@ -34,45 +47,57 @@ export default function RegisterPage() {
       return
     }
 
-    // Check username uniqueness
-    const { data: existing } = await supabase
-      .from('users')
-      .select('id')
-      .eq('username', username)
-      .single()
+    try {
+      // Check username uniqueness
+      const { data: existing } = await supabase
+        .from('users')
+        .select('id')
+        .eq('username', username)
+        .single()
 
-    if (existing) {
-      setError('Este username já está em uso.')
-      setLoading(false)
-      return
-    }
+      if (existing) {
+        setError('Este username já está em uso.')
+        setLoading(false)
+        return
+      }
 
-    const { error: signUpErr } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          display_name: displayName,
-          username,
+      const { error: signUpErr } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/api/auth/callback?next=${encodeURIComponent(redirectTo)}`,
+          data: {
+            display_name: displayName,
+            username,
+          },
         },
-      },
-    })
+      })
 
-    if (signUpErr) {
-      setError(signUpErr.message)
+      if (signUpErr) {
+        setError(signUpErr.message)
+        setLoading(false)
+        return
+      }
+
+      setSuccess(true)
       setLoading(false)
-      return
+    } catch (ex: any) {
+      console.error(ex)
+      setError('Ocorreu um erro ao criar a conta.')
+      setLoading(false)
     }
-
-    setSuccess(true)
-    setLoading(false)
   }
 
   async function handleGoogleLogin() {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: `${window.location.origin}/api/auth/callback` },
-    })
+    try {
+      await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: `${window.location.origin}/api/auth/callback?next=${encodeURIComponent(redirectTo)}` },
+      })
+    } catch (ex: any) {
+      console.error(ex)
+      setError('Erro ao iniciar cadastro com o Google.')
+    }
   }
 
   if (success) {
@@ -85,7 +110,12 @@ export default function RegisterPage() {
             Enviamos um link de confirmação para <strong>{email}</strong>.
             Clique nele para ativar sua conta.
           </p>
-          <Link href="/login" className={styles.link}>← Ir para o login</Link>
+          <Link
+            href={`/login${redirectTo !== '/' ? `?redirectTo=${encodeURIComponent(redirectTo)}` : ''}`}
+            className={styles.link}
+          >
+            ← Ir para o login
+          </Link>
         </div>
       </div>
     )
@@ -183,7 +213,12 @@ export default function RegisterPage() {
 
         <p className={styles.footer}>
           Já tem conta?{' '}
-          <Link href="/login" className={styles.link}>Entrar</Link>
+          <Link
+            href={`/login${redirectTo !== '/' ? `?redirectTo=${encodeURIComponent(redirectTo)}` : ''}`}
+            className={styles.link}
+          >
+            Entrar
+          </Link>
         </p>
       </div>
     </div>

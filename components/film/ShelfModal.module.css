@@ -231,3 +231,149 @@
 .deleteBtn:hover {
   background: rgba(239,68,68,0.1) !important;
 }
+
+.select {
+  background: var(--cx-surface2);
+  border: 1px solid var(--cx-border2);
+  border-radius: var(--cx-radius);
+  color: var(--cx-text);
+  padding: 10px 14px;
+  font-size: 13px;
+  width: 100%;
+  outline: none;
+  transition: border-color var(--cx-transition);
+  cursor: pointer;
+}
+
+.select:focus {
+  border-color: var(--cx-border3);
+}
+
+.select option {
+  background: var(--cx-bg);
+  color: var(--cx-text);
+}
+
+/* Carousel for Best Actor */
+.castCarousel {
+  display: flex;
+  overflow-x: auto;
+  gap: 12px;
+  padding: 8px 4px 16px 4px;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--cx-border) transparent;
+}
+
+.castCarousel::-webkit-scrollbar {
+  height: 6px;
+}
+
+.castCarousel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.castCarousel::-webkit-scrollbar-thumb {
+  background-color: var(--cx-border);
+  border-radius: 3px;
+}
+
+.actorCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: var(--cx-surface2);
+  border: 1px solid var(--cx-border2);
+  border-radius: 12px;
+  padding: 10px 8px;
+  width: 96px;
+  min-width: 96px;
+  cursor: pointer;
+  outline: none;
+  transition: all var(--cx-transition);
+  position: relative;
+}
+
+.actorCard:hover {
+  border-color: var(--cx-border3);
+  transform: translateY(-2px);
+  background: var(--cx-surface3);
+}
+
+.actorCardActive {
+  border-color: var(--cx-gold) !important;
+  background: rgba(245, 200, 66, 0.08) !important;
+  box-shadow: 0 0 12px rgba(245, 200, 66, 0.25);
+}
+
+.actorAvatarWrap {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-bottom: 8px;
+  position: relative;
+  border: 2px solid var(--cx-border2);
+  transition: border-color var(--cx-transition);
+  background: var(--cx-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.actorCardActive .actorAvatarWrap {
+  border-color: var(--cx-gold);
+}
+
+.actorAvatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.actorAvatarFallback {
+  font-size: 20px;
+}
+
+.actorName {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cx-text);
+  line-height: 1.3;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  height: 28px;
+}
+
+.actorCharacter {
+  font-size: 9px;
+  color: var(--cx-text3);
+  margin-top: 2px;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Gold Badge overlay for selected actor */
+.selectedBadge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: var(--cx-gold);
+  color: #000;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  z-index: 2;
+}

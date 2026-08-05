@@ -1,47 +1,67 @@
 .grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 4px;
+  gap: 16px;
 }
 
 .item {
-  display: block;
-  aspect-ratio: 2/3;
-  border-radius: 4px;
-  overflow: hidden;
-  position: relative;
-  background: var(--cx-surface2);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-decoration: none;
+  color: inherit;
 }
 
 .poster {
+  aspect-ratio: 2/3;
+  border-radius: 6px;
+  overflow: hidden;
   position: relative;
+  background: var(--cx-surface2);
   width: 100%;
-  height: 100%;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  transition: transform var(--cx-transition), box-shadow var(--cx-transition), border-color var(--cx-transition);
+  border: 1px solid var(--cx-border);
 }
 
-.overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.6);
+.item:hover .poster {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.45);
+  border-color: var(--cx-border-hover);
+}
+
+.meta {
   display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding: 4px;
-  opacity: 0;
-  transition: opacity var(--cx-transition);
+  flex-direction: column;
+  gap: 4px;
 }
 
-.item:hover .overlay {
-  opacity: 1;
-}
-
-.rating {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  font-size: 10px;
+.filmTitle {
+  font-size: 11px;
   font-weight: 600;
-  color: var(--cx-gold);
+  color: var(--cx-text);
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  height: 28px;
+  transition: color var(--cx-transition);
+}
+
+.item:hover .filmTitle {
+  color: var(--cx-text-hover);
+}
+
+.ratingRow {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+}
+
+.star {
+  display: block;
+  flex-shrink: 0;
 }
 
 .more {
@@ -49,23 +69,35 @@
   align-items: center;
   justify-content: center;
   aspect-ratio: 2/3;
-  border-radius: 4px;
+  border-radius: 6px;
   background: var(--cx-surface2);
   border: 1px dashed var(--cx-border2);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--cx-text3);
-  transition: color var(--cx-transition), border-color var(--cx-transition);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: color var(--cx-transition), border-color var(--cx-transition), transform var(--cx-transition);
 }
 
 .more:hover {
   color: var(--cx-text2);
   border-color: var(--cx-border3);
+  transform: translateY(-4px);
 }
 
 .empty {
-  padding: 20px 0;
+  padding: 40px 0;
   text-align: center;
   color: var(--cx-text3);
-  font-size: 12px;
+  font-size: 13px;
+  background: var(--cx-surface);
+  border-radius: 10px;
+  border: 1px dashed var(--cx-border);
+}
+
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
 }

@@ -1,40 +1,65 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Button from '@/components/ui/Button'
+import { getHighResAvatarUrl } from '@/lib/avatar'
 import styles from '../auth.module.css'
 
 export default function LoginPage() {
   const router = useRouter()
   const supabase = createClient()
+
+  const [redirectTo, setRedirectTo] = useState('/')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Read search parameters safely on client side
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      const redirect = params.get('redirectTo')
+      if (redirect) {
+        setRedirectTo(redirect)
+      }
+    }
+  }, [])
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError(null)
 
-    const { error: err } = await supabase.auth.signInWithPassword({ email, password })
-    if (err) {
-      setError('Email ou senha incorretos.')
+    try {
+      const { error: err } = await supabase.auth.signInWithPassword({ email, password })
+      if (err) {
+        setError('Email ou senha incorretos.')
+        setLoading(false)
+        return
+      }
+      router.push(redirectTo)
+      router.refresh()
+    } catch (ex: any) {
+      console.error(ex)
+      setError('Ocorreu um erro ao fazer login.')
       setLoading(false)
-      return
     }
-    router.push('/')
-    router.refresh()
   }
 
   async function handleGoogleLogin() {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: `${window.location.origin}/api/auth/callback` },
-    })
+    try {
+      await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: `${window.location.origin}/api/auth/callback?next=${encodeURIComponent(redirectTo)}` },
+      })
+    } catch (ex: any) {
+      console.error(ex)
+      setError('Erro ao iniciar login com o Google.')
+    }
   }
 
   return (
@@ -107,7 +132,12 @@ export default function LoginPage() {
 
         <p className={styles.footer}>
           Não tem conta?{' '}
-          <Link href="/register" className={styles.link}>Cadastre-se grátis</Link>
+          <Link
+            href={`/register${redirectTo !== '/' ? `?redirectTo=${encodeURIComponent(redirectTo)}` : ''}`}
+            className={styles.link}
+          >
+            Cadastre-se grátis
+          </Link>
         </p>
       </div>
     </div>

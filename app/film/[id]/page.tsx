@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { use } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import StarRating from '@/components/film/StarRating'
 import PosterImage from '@/components/film/PosterImage'
 import ReviewCard from '@/components/feed/ReviewCard'
@@ -15,7 +16,9 @@ export default function FilmDetailPage({ params }: { params: Promise<{ id: strin
   const { id } = use(params)
   const tmdbId = parseInt(id)
   const supabase = createClient()
+  const router = useRouter()
 
+  const [currentUser, setCurrentUser] = useState<any>(null)
   const [film, setFilm] = useState<any>(null)
   const [cast, setCast] = useState<any[]>([])
   const [crew, setCrew] = useState<any[]>([])
@@ -62,6 +65,47 @@ export default function FilmDetailPage({ params }: { params: Promise<{ id: strin
     }
   }, [cast])
 
+  const refreshFilmStatus = async () => {
+    const { data: dbF } = await supabase
+      .from('films')
+      .select('*')
+      .eq('tmdb_id', tmdbId)
+      .single()
+    
+    setDbFilm(dbF)
+
+    const { data: { user: authUser } } = await supabase.auth.getUser()
+    setCurrentUser(authUser)
+
+    if (dbF) {
+      if (authUser) {
+        const { data: entry } = await supabase
+          .from('shelf_entries')
+          .select('*')
+          .eq('user_id', authUser.id)
+          .eq('film_id', dbF.id)
+          .single()
+        setUserEntry(entry || null)
+      } else {
+        setUserEntry(null)
+      }
+
+      const { data: entries } = await supabase
+        .from('shelf_entries')
+        .select(`
+          id, status, rating, review, watched_at, created_at,
+          user:users(username, display_name, avatar_url),
+          film:films(tmdb_id, title, release_year, poster_url)
+        `)
+        .eq('film_id', dbF.id)
+        .eq('is_public', true)
+        .not('rating', 'is', null)
+        .order('created_at', { ascending: false })
+        .limit(20)
+      setReviews(entries ?? [])
+    }
+  }
+
   useEffect(() => {
     const fetchData = async () => {
       // Fetch from TMDB proxy
@@ -72,42 +116,7 @@ export default function FilmDetailPage({ params }: { params: Promise<{ id: strin
       setCrew(json.crew ?? [])
       setLoading(false)
 
-      // Check if cached in Supabase
-      const { data: dbF } = await supabase
-        .from('films')
-        .select('*')
-        .eq('tmdb_id', tmdbId)
-        .single()
-      setDbFilm(dbF)
-
-      if (dbF) {
-        // Fetch Cinex reviews
-        const { data: entries } = await supabase
-          .from('shelf_entries')
-          .select(`
-            id, status, rating, review, watched_at, created_at,
-            user:users(username, display_name, avatar_url),
-            film:films(tmdb_id, title, release_year, poster_url)
-          `)
-          .eq('film_id', dbF.id)
-          .eq('is_public', true)
-          .not('rating', 'is', null)
-          .order('created_at', { ascending: false })
-          .limit(20)
-        setReviews(entries ?? [])
-
-        // User's entry
-        const { data: { user: authUser } } = await supabase.auth.getUser()
-        if (authUser) {
-          const { data: entry } = await supabase
-            .from('shelf_entries')
-            .select('*')
-            .eq('user_id', authUser.id)
-            .eq('film_id', dbF.id)
-            .single()
-          setUserEntry(entry)
-        }
-      }
+      await refreshFilmStatus()
     }
 
     if (!isNaN(tmdbId)) fetchData()
@@ -279,7 +288,13 @@ export default function FilmDetailPage({ params }: { params: Promise<{ id: strin
                 <Button
                   variant="primary"
                   size="lg"
-                  onClick={() => setShelfOpen(true)}
+                  onClick={() => {
+                    if (!currentUser) {
+                      router.push(`/login?redirectTo=/film/${tmdbId}`)
+                    } else {
+                      setShelfOpen(true)
+                    }
+                  }}
                   id="film-add-shelf-btn"
                   className={styles.addShelfBtn}
                 >
@@ -307,7 +322,11 @@ export default function FilmDetailPage({ params }: { params: Promise<{ id: strin
 
               <div className={styles.castScroll} ref={castScrollRef}>
                 {[...cast, ...cast, ...cast].map((member: any, idx: number) => (
-                  <div key={`${member.tmdb_id}-${idx}`} className={styles.castCard}>
+                  <Link
+                    key={`${member.tmdb_id}-${idx}`}
+                    href={`/actor/${member.tmdb_id}`}
+                    className={styles.castCard}
+                  >
                     <div className={styles.castPhoto}>
                       {member.profile_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -324,7 +343,7 @@ export default function FilmDetailPage({ params }: { params: Promise<{ id: strin
                     {member.character && (
                       <div className={styles.castCharacter}>{member.character}</div>
                     )}
-                  </div>
+                  </Link>
                 ))}
               </div>
 
@@ -460,21 +479,7 @@ export default function FilmDetailPage({ params }: { params: Promise<{ id: strin
         existingEntry={userEntry}
         onSaved={() => {
           setShelfOpen(false)
-          // Refresh user entry
-          const refresh = async () => {
-            if (!dbFilm) return
-            const { data: { user: authUser } } = await supabase.auth.getUser()
-            if (authUser) {
-              const { data } = await supabase
-                .from('shelf_entries')
-                .select('*')
-                .eq('user_id', authUser.id)
-                .eq('film_id', dbFilm.id)
-                .single()
-              setUserEntry(data)
-            }
-          }
-          refresh()
+          refreshFilmStatus()
         }}
       />
     </div>

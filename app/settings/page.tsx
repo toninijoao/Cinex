@@ -5,17 +5,20 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Button from '@/components/ui/Button'
 import { CheckIcon } from '@/components/ui/Icons'
+import { getHighResAvatarUrl } from '@/lib/avatar'
 import styles from './page.module.css'
 
 export default function SettingsPage() {
   const supabase = createClient()
   const router = useRouter()
+  
   const [profile, setProfile] = useState<any>(null)
   const [displayName, setDisplayName] = useState('')
   const [bio, setBio] = useState('')
   const [location, setLocation] = useState('')
   const [annualGoal, setAnnualGoal] = useState('')
-  const [isPublic, setIsPublic] = useState(true)
+  const [avatarUrl, setAvatarUrl] = useState('')
+  
   const [loading, setLoading] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -32,11 +35,56 @@ export default function SettingsPage() {
         setBio(data.bio ?? '')
         setLocation(data.location ?? '')
         setAnnualGoal(data.annual_goal ? String(data.annual_goal) : '')
-        setIsPublic(data.is_public ?? true)
+        setAvatarUrl(data.avatar_url ?? '')
       }
     }
     fetchProfile()
   }, [])
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Limit to 5MB
+    if (file.size > 5 * 1024 * 1024) {
+      setError('A imagem deve ter no máximo 5MB.')
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const img = new Image()
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        const max_size = 256 // Perfect avatar resolution
+        let width = img.width
+        let height = img.height
+
+        if (width > height) {
+          if (width > max_size) {
+            height *= max_size / width
+            width = max_size
+          }
+        } else {
+          if (height > max_size) {
+            width *= max_size / height
+            height = max_size
+          }
+        }
+
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext('2d')
+        ctx?.drawImage(img, 0, 0, width, height)
+
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.8)
+        setAvatarUrl(dataUrl)
+        setError(null)
+      }
+      img.src = event.target?.result as string
+    }
+    reader.readAsDataURL(file)
+  }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
@@ -50,16 +98,20 @@ export default function SettingsPage() {
         display_name: displayName.trim(),
         bio: bio.trim() || null,
         location: location.trim() || null,
-        is_public: isPublic,
+        avatar_url: avatarUrl.trim() || null,
+        is_public: true, // Always public
         annual_goal: annualGoal ? parseInt(annualGoal) : null,
       })
       .eq('id', profile.id)
 
     if (err) {
+      console.error(err)
       setError('Erro ao salvar. Tente novamente.')
     } else {
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
+      // Force refresh auth session and navbar if needed
+      router.refresh()
     }
     setLoading(false)
   }
@@ -81,7 +133,6 @@ export default function SettingsPage() {
           {/* Sidebar nav */}
           <nav className={styles.sideNav}>
             <a href="#profile" className={styles.sideLink}>Perfil</a>
-            <a href="#privacy" className={styles.sideLink}>Privacidade</a>
             <a href="#goal" className={styles.sideLink}>Meta anual</a>
             <button className={styles.signOut} onClick={handleSignOut} id="settings-signout-btn">
               Sair da conta
@@ -96,15 +147,47 @@ export default function SettingsPage() {
 
               <div className={styles.avatarSection}>
                 <div className={styles.avatar}>
-                  {profile.avatar_url
-                    ? <img src={profile.avatar_url} alt={profile.display_name} />
-                    : <span>{(profile.display_name ?? 'U')[0].toUpperCase()}</span>
+                  {avatarUrl
+                    ? <img src={getHighResAvatarUrl(avatarUrl) || ''} alt={displayName} />
+                    : <span>{(displayName ?? 'U')[0].toUpperCase()}</span>
                   }
                 </div>
-                <div>
+                <div className={styles.avatarControls}>
                   <p className={styles.avatarLabel}>@{profile.username}</p>
-                  <p className={styles.avatarHint}>Membro desde {new Date(profile.created_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</p>
+                  <div className={styles.avatarButtons}>
+                    <label className={styles.uploadBtn}>
+                      <span>Upload de Foto</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        style={{ display: 'none' }}
+                      />
+                    </label>
+                    {avatarUrl && (
+                      <button
+                        type="button"
+                        className={styles.removeAvatarBtn}
+                        onClick={() => setAvatarUrl('')}
+                      >
+                        Remover
+                      </button>
+                    )}
+                  </div>
+                  <p className={styles.avatarHint}>JPG ou PNG. Tamanho recomendado: 256x256.</p>
                 </div>
+              </div>
+
+              <div className={styles.field}>
+                <label htmlFor="settings-avatar" className={styles.label}>Ou cole o link de uma imagem</label>
+                <input
+                  id="settings-avatar"
+                  type="text"
+                  value={avatarUrl.startsWith('data:') ? '' : avatarUrl}
+                  onChange={e => setAvatarUrl(e.target.value)}
+                  className={styles.input}
+                  placeholder={avatarUrl.startsWith('data:') ? '✓ Foto carregada via arquivo local' : 'https://exemplo.com/sua-foto.jpg'}
+                />
               </div>
 
               <div className={styles.field}>
@@ -116,6 +199,7 @@ export default function SettingsPage() {
                   onChange={e => setDisplayName(e.target.value)}
                   className={styles.input}
                   maxLength={50}
+                  required
                 />
               </div>
 
@@ -144,29 +228,6 @@ export default function SettingsPage() {
                   placeholder="Cidade, País"
                   maxLength={50}
                 />
-              </div>
-            </section>
-
-            <hr className="divider" />
-
-            {/* Privacy section */}
-            <section className={styles.section} id="privacy">
-              <h2 className={styles.sectionTitle}>Privacidade</h2>
-
-              <div className={styles.toggleRow}>
-                <div>
-                  <div className={styles.toggleLabel}>Perfil público</div>
-                  <div className={styles.toggleHint}>Quando desativado, sua estante fica oculta para outros usuários</div>
-                </div>
-                <button
-                  type="button"
-                  id="settings-public-toggle"
-                  className={`${styles.toggle} ${isPublic ? styles.toggleOn : ''}`}
-                  onClick={() => setIsPublic(v => !v)}
-                  aria-pressed={isPublic}
-                >
-                  <span className={styles.toggleThumb} />
-                </button>
               </div>
             </section>
 

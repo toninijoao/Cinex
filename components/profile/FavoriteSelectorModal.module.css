@@ -1,0 +1,153 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+.searchBox {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  color: var(--cx-text3);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  background: var(--cx-surface2);
+  border: 1px solid var(--cx-border2);
+  border-radius: 8px;
+  color: var(--cx-text);
+  padding: 10px 12px 10px 38px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color var(--cx-transition);
+}
+
+.searchInput:focus {
+  border-color: var(--cx-border3);
+}
+
+.resultsList {
+  max-height: 320px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-right: 4px;
+}
+
+.statusMsg {
+  text-align: center;
+  font-size: 13px;
+  color: var(--cx-text3);
+  padding: 24px 0;
+}
+
+.resultItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 12px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--cx-transition);
+}
+
+.resultItem:hover {
+  background: var(--cx-surface);
+  border-color: var(--cx-border2);
+}
+
+.avatarWrap {
+  width: 40px;
+  height: 48px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--cx-surface2);
+}
+
+.poster {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.posterFallback {
+  font-size: 18px;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatarFallback {
+  font-size: 18px;
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cx-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sub {
+  font-size: 11px;
+  color: var(--cx-text3);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid var(--cx-border);
+  padding-top: 16px;
+  margin-top: 8px;
+}
+
+.suggestionsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.suggestionsHeading {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--cx-text3);
+  margin-bottom: 4px;
+}
+
+.suggestionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}

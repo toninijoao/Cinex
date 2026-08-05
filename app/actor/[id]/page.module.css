@@ -1,0 +1,471 @@
+.page {
+  padding-bottom: 60px;
+}
+
+.hero {
+  position: relative;
+  height: 320px;
+  overflow: hidden;
+  margin-bottom: -60px;
+}
+
+.backdrop {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.22;
+  filter: blur(8px);
+}
+
+.heroOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 30%, var(--cx-bg) 100%);
+}
+
+.main {
+  display: flex;
+  gap: 36px;
+  align-items: flex-start;
+  position: relative;
+  z-index: 1;
+  padding-top: 32px;
+}
+
+.sidebar {
+  width: 320px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.profileContainer {
+  width: 320px;
+  aspect-ratio: 2/3;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--cx-surface2);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  position: relative;
+  border: 1px solid var(--cx-border);
+  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+              filter 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+              box-shadow 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.profileContainer:hover {
+  transform: scale(1.04);
+  filter: brightness(1.1);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.65);
+}
+
+.profileImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.noProfile {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cx-text3);
+  background: var(--cx-surface2);
+}
+
+.personalInfo {
+  background: var(--cx-surface);
+  border: 1px solid var(--cx-border);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.infoTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--cx-text);
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--cx-border);
+  padding-bottom: 10px;
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.infoLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cx-text3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.infoValue {
+  font-size: 13px;
+  color: var(--cx-text);
+  line-height: 1.4;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+.name {
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--cx-text);
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+}
+
+.statsRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.cinexPointsBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 140, 0, 0.15));
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  padding: 6px 12px;
+  border-radius: 20px;
+  color: #ffd700;
+  font-weight: 600;
+  font-size: 13px;
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.05);
+  transition: all var(--cx-transition);
+}
+
+.cinexPointsBadge:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 215, 0, 0.5);
+  box-shadow: 0 6px 16px rgba(255, 215, 0, 0.1);
+}
+
+.pointsCount {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.pointsLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.9;
+}
+
+.roleTitle {
+  font-size: 13px;
+  color: var(--cx-red);
+  font-weight: 600;
+  margin-top: -12px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.bioSection {
+  background: var(--cx-surface);
+  border: 1px solid var(--cx-border);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sectionTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--cx-text);
+  letter-spacing: -0.3px;
+}
+
+.biography {
+  font-size: 14px;
+  color: var(--cx-text2);
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
+/* Skeletons */
+.heroSkeleton {
+  height: 320px;
+  background: linear-gradient(90deg, var(--cx-surface) 25%, var(--cx-surface2) 50%, var(--cx-surface) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.contentSkeleton {
+  display: flex;
+  gap: 36px;
+  margin-top: 40px;
+}
+
+.posterSk {
+  width: 320px;
+  flex-shrink: 0;
+  aspect-ratio: 2/3;
+  border-radius: 10px;
+  background: var(--cx-surface);
+  background-image: linear-gradient(90deg, var(--cx-surface) 25%, var(--cx-surface2) 50%, var(--cx-surface) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.infoSk {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 20px;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Works Section & Carousel */
+.worksSection {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.worksWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.worksScroll {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding: 6px 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.worksScroll::-webkit-scrollbar {
+  display: none;
+}
+
+.movieCard {
+  flex-shrink: 0;
+  width: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: transform var(--cx-transition);
+}
+
+.movieCard:hover {
+  transform: translateY(-4px);
+}
+
+.posterContainer {
+  width: 120px;
+  aspect-ratio: 2/3;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--cx-surface2);
+  border: 1px solid var(--cx-border);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  transition: border-color var(--cx-transition), box-shadow var(--cx-transition);
+}
+
+.movieCard:hover .posterContainer {
+  border-color: var(--cx-red);
+  box-shadow: 0 6px 15px rgba(232, 41, 74, 0.25);
+}
+
+.moviePoster {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.noPoster {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  background: var(--cx-surface2);
+  color: var(--cx-text3);
+  font-size: 10px;
+  text-align: center;
+}
+
+.movieTitle {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cx-text);
+  text-align: center;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  height: 28px;
+}
+
+.movieCharacter {
+  font-size: 10px;
+  color: var(--cx-text3);
+  text-align: center;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  height: 26px;
+}
+
+/* Navigation Arrows */
+.worksArrow {
+  position: absolute;
+  top: 90px;
+  transform: translateY(-50%);
+  background: var(--cx-red);
+  color: var(--cx-text);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  transition: background-color var(--cx-transition), transform var(--cx-transition);
+  border: none;
+}
+
+.worksArrow svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.worksArrow:hover {
+  background: var(--cx-red-hover);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.worksArrow:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.worksArrowLeft {
+  left: -16px;
+}
+
+.worksArrowRight {
+  right: -16px;
+}
+
+@media (max-width: 768px) {
+  .main {
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .sidebar {
+    width: 100%;
+    align-items: center;
+  }
+
+  .profileContainer {
+    width: 200px;
+  }
+
+  .personalInfo {
+    width: 100%;
+  }
+
+  .name {
+    text-align: center;
+    font-size: 28px;
+  }
+
+  .worksArrow {
+    display: none;
+  }
+}
+
+/* Awards Section */
+.awardsRow {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: -4px;
+  margin-bottom: 8px;
+}
+
+.awardBadge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--cx-surface);
+  border: 1px solid var(--cx-border);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  color: var(--cx-text2);
+  transition: border-color var(--cx-transition), color var(--cx-transition), transform var(--cx-transition);
+}
+
+.awardBadge:hover {
+  border-color: var(--cx-gold);
+  color: var(--cx-text);
+  transform: translateY(-1px);
+}
+
+.awardIcon {
+  width: 14px;
+  height: 18px;
+  color: var(--cx-gold);
+  display: block;
+}
+
+.awardCount {
+  font-weight: 700;
+  color: var(--cx-text);
+}
+
+.awardName {
+  font-weight: 500;
+  color: var(--cx-text2);
+}
+
+.awardBadge:hover .awardName {
+  color: var(--cx-text);
+}
+
+@media (max-width: 768px) {
+  .awardsRow {
+    justify-content: center;
+    margin-bottom: 12px;
+  }
+}

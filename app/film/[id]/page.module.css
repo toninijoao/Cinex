@@ -270,6 +270,12 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  transition: transform var(--cx-transition);
+  cursor: pointer;
+}
+
+.castCard:hover {
+  transform: translateY(-2px);
 }
 
 .castPhoto {
@@ -279,6 +285,12 @@
   overflow: hidden;
   background: var(--cx-surface2);
   flex-shrink: 0;
+  border: 2px solid transparent;
+  transition: border-color var(--cx-transition);
+}
+
+.castCard:hover .castPhoto {
+  border-color: var(--cx-red);
 }
 
 .castPhoto img {

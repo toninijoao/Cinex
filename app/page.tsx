@@ -9,6 +9,7 @@ import StatsCard from '@/components/stats/StatsCard'
 import MiniShelf from '@/components/profile/MiniShelf'
 import FilterPill from '@/components/ui/FilterPill'
 import { createClient } from '@/lib/supabase/client'
+import { getHighResAvatarUrl } from '@/lib/avatar'
 import { ClapperboardIcon, FlameIcon, TrophyIcon } from '@/components/ui/Icons'
 import styles from './page.module.css'
 
@@ -18,16 +19,12 @@ export default function HomePage() {
   const supabase = createClient()
   const [tab, setTab] = useState<TabType>('feed')
   const [feedEntries, setFeedEntries] = useState<any[]>([])
-  const [popularFilms, setPopularFilms] = useState<any[]>([])
   const [nowPlaying, setNowPlaying] = useState<any[]>([])
   const [user, setUser] = useState<any>(null)
   const [miniShelf, setMiniShelf] = useState<any[]>([])
   const [shelfModal, setShelfModal] = useState<{ film: any } | null>(null)
   const [loadingFeed, setLoadingFeed] = useState(true)
   const [loadingCatalog, setLoadingCatalog] = useState(true)
-  const [genreFilter, setGenreFilter] = useState<string | null>(null)
-
-  const GENRE_FILTERS = ['Ação', 'Drama', 'Comédia', 'Terror', 'Ficção Científica', 'Animação']
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -76,12 +73,9 @@ export default function HomePage() {
   useEffect(() => {
     const fetchCatalog = async () => {
       setLoadingCatalog(true)
-      const [pop, np] = await Promise.all([
-        fetch('/api/tmdb/popular?page=1').then(r => r.json()),
-        fetch('/api/tmdb/now-playing?page=1').then(r => r.json()),
-      ])
-      setPopularFilms((pop.results ?? []).slice(0, 12))
-      setNowPlaying((np.results ?? []).slice(0, 8))
+      const res = await fetch('/api/tmdb/now-playing?page=1')
+      const json = await res.json()
+      setNowPlaying((json.results ?? []).slice(0, 12))
       setLoadingCatalog(false)
     }
     if (tab === 'catalog') fetchCatalog()
@@ -115,7 +109,7 @@ export default function HomePage() {
                   className={`${styles.toggleBtn} ${tab === 'catalog' ? styles.toggleActive : ''}`}
                   onClick={() => setTab('catalog')}
                 >
-                  Catálogo
+                  Em cartaz
                 </button>
               </div>
             </div>
@@ -143,27 +137,6 @@ export default function HomePage() {
             {/* CATALOG TAB */}
             {tab === 'catalog' && (
               <div>
-                {/* Genre filters */}
-                <div className={styles.filters}>
-                  <FilterPill
-                    label="Todos"
-                    active={genreFilter === null}
-                    color="blue"
-                    onClick={() => setGenreFilter(null)}
-                    id="genre-all"
-                  />
-                  {GENRE_FILTERS.map(g => (
-                    <FilterPill
-                      key={g}
-                      label={g}
-                      active={genreFilter === g}
-                      color="blue"
-                      onClick={() => setGenreFilter(g)}
-                      id={`genre-${g}`}
-                    />
-                  ))}
-                </div>
-
                 {loadingCatalog ? (
                   <div className={styles.filmGrid}>
                     {Array.from({ length: 12 }).map((_, i) => (
@@ -171,41 +144,19 @@ export default function HomePage() {
                     ))}
                   </div>
                 ) : (
-                  <>
-                    <section>
-                      <h2 className={styles.sectionTitle}><ClapperboardIcon size={17} color="var(--cx-red)" /> Em cartaz</h2>
-                      <div className={styles.filmGrid}>
-                        {nowPlaying.map(film => (
-                          <FilmCard
-                            key={film.tmdb_id}
-                            tmdbId={film.tmdb_id}
-                            title={film.title}
-                            year={film.release_year}
-                            posterUrl={film.poster_url}
-                            avgRating={film.tmdb_vote_average}
-                            onAddToShelf={() => setShelfModal({ film })}
-                          />
-                        ))}
-                      </div>
-                    </section>
-
-                    <section className={styles.section}>
-                      <h2 className={styles.sectionTitle}><FlameIcon size={17} color="var(--cx-red)" /> Populares</h2>
-                      <div className={styles.filmGrid}>
-                        {popularFilms.map(film => (
-                          <FilmCard
-                            key={film.tmdb_id}
-                            tmdbId={film.tmdb_id}
-                            title={film.title}
-                            year={film.release_year}
-                            posterUrl={film.poster_url}
-                            avgRating={film.tmdb_vote_average}
-                            onAddToShelf={() => setShelfModal({ film })}
-                          />
-                        ))}
-                      </div>
-                    </section>
-                  </>
+                  <div className={styles.filmGrid}>
+                    {nowPlaying.map(film => (
+                      <FilmCard
+                        key={film.tmdb_id}
+                        tmdbId={film.tmdb_id}
+                        title={film.title}
+                        year={film.release_year}
+                        posterUrl={film.poster_url}
+                        avgRating={film.tmdb_vote_average}
+                        onAddToShelf={() => setShelfModal({ film })}
+                      />
+                    ))}
+                  </div>
                 )}
               </div>
             )}
@@ -218,7 +169,7 @@ export default function HomePage() {
               <div className={styles.sideProfile}>
                 <div className={styles.sideAvatar}>
                   {user.avatar_url
-                    ? <img src={user.avatar_url} alt={user.display_name} />
+                    ? <img src={getHighResAvatarUrl(user.avatar_url) || ''} alt={user.display_name} />
                     : <span>{(user.display_name ?? 'U')[0].toUpperCase()}</span>
                   }
                 </div>

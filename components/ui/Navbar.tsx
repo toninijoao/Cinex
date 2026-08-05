@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { getHighResAvatarUrl } from '@/lib/avatar'
 import styles from './Navbar.module.css'
 
 const NAV_LINKS = [
@@ -124,7 +125,7 @@ export default function Navbar() {
                 aria-label="Menu do usuário"
               >
                 {user.avatar_url ? (
-                  <img src={user.avatar_url} alt={user.display_name ?? user.username ?? ''} />
+                  <img src={getHighResAvatarUrl(user.avatar_url) || ''} alt={user.display_name ?? user.username ?? ''} />
                 ) : (
                   <span className={styles.avatarFallback}>
                     {(user.display_name ?? user.username ?? 'U')[0].toUpperCase()}

@@ -38,7 +38,7 @@ export async function GET(
     const backdrops = (film as any).images?.backdrops ?? []
     // Filter out backdrops without file_path and skip the first one to avoid duplicate of the header background
     const validBackdrops = backdrops.filter((b: any) => b.file_path).slice(1)
-    const sampleSize = 10
+    const sampleSize = 16
     const poolSize = Math.min(validBackdrops.length, 100)
     const images: string[] = []
 

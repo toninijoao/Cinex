@@ -186,3 +186,44 @@ export function mapTmdbToFilm(film: TmdbFilmDetail) {
     synced_at: new Date().toISOString(),
   }
 }
+
+// ── Person Details ─────────────────────────────────────────────────────────────
+
+export interface TmdbPersonDetail {
+  id: number
+  name: string
+  biography: string
+  birthday: string | null
+  place_of_birth: string | null
+  gender: number
+  profile_path: string | null
+  movie_credits?: {
+    cast: {
+      id: number
+      title: string
+      character: string
+      poster_path: string | null
+      release_date: string
+      popularity: number
+    }[]
+  }
+}
+
+export async function getPersonDetails(personId: number): Promise<TmdbPersonDetail> {
+  return tmdbFetch<TmdbPersonDetail>(`/person/${personId}`, {
+    append_to_response: 'movie_credits',
+  })
+}
+
+export async function searchPeople(query: string, page = 1): Promise<any> {
+  return tmdbFetch<any>('/search/person', {
+    query,
+    page: String(page),
+  })
+}
+
+export async function getPopularPeople(page = 1): Promise<any> {
+  return tmdbFetch<any>('/person/popular', {
+    page: String(page),
+  })
+}
