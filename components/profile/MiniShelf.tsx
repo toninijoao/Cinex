@@ -10,6 +10,9 @@ interface MiniShelfProps {
       poster_url: string | null
     }
     rating: number | null
+    best_actor_tmdb_id?: number | null
+    best_actor_name?: string | null
+    best_actor_profile_path?: string | null
   }[]
   username: string
   maxItems?: number
@@ -73,6 +76,26 @@ export default function MiniShelf({ entries, username, maxItems = 5 }: MiniShelf
                     </svg>
                   )
                 })}
+              </div>
+            )}
+
+            {entry.best_actor_name && (
+              <div className={styles.bestActorRow}>
+                <div className={styles.bestActorAvatarWrap}>
+                  {entry.best_actor_profile_path ? (
+                    <img
+                      src={entry.best_actor_profile_path}
+                      alt={entry.best_actor_name}
+                      className={styles.bestActorAvatar}
+                    />
+                  ) : (
+                    <div className={styles.bestActorAvatarFallback}>👤</div>
+                  )}
+                </div>
+                <div className={styles.bestActorMeta}>
+                  <span className={styles.bestActorLabel}>Atuação Favorita</span>
+                  <span className={styles.bestActorName}>{entry.best_actor_name}</span>
+                </div>
               </div>
             )}
           </div>

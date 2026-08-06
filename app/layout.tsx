@@ -1,10 +1,14 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import Navbar from '@/components/ui/Navbar'
 
+export const viewport: Viewport = {
+  themeColor: '#0D0D14',
+}
+
 export const metadata: Metadata = {
   title: {
-    default: 'Cinex — Sua rede social de cinema',
+    default: 'Cinex',
     template: '%s | Cinex',
   },
   description: 'Registre, avalie e descubra filmes. Acompanhe seus minutos assistidos e conecte-se com outros cinéfilos.',
@@ -15,7 +19,6 @@ export const metadata: Metadata = {
     locale: 'pt_BR',
     siteName: 'Cinex',
   },
-  themeColor: '#0D0D14',
 }
 
 export default function RootLayout({

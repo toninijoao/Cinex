@@ -39,24 +39,29 @@ export default function ShelfPage({ params }: { params: Promise<{ username: stri
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true)
-      const [{ data: prof }, { data: { user } }] = await Promise.all([
-        supabase.from('users').select('id, username, display_name').eq('username', username).single(),
-        supabase.auth.getUser(),
-      ])
-      setProfile(prof)
-      setCurrentUserId(user?.id ?? null)
-      if (!prof) { setLoading(false); return }
+      try {
+        const [{ data: prof }, { data: { user } }] = await Promise.all([
+          supabase.from('users').select('id, username, display_name').eq('username', username).single(),
+          supabase.auth.getUser(),
+        ])
+        setProfile(prof)
+        setCurrentUserId(user?.id ?? null)
+        if (!prof) { return }
 
-      const isOwn = user?.id === prof.id
-      let query = supabase
-        .from('shelf_entries')
-        .select('id, status, rating, review, watched_at, is_public, rewatch_count, film:films(id, tmdb_id, title, release_year, poster_url, runtime_minutes, avg_rating, ratings_count)')
-        .eq('user_id', prof.id)
-      if (!isOwn) query = query.eq('is_public', true)
+        const isOwn = user?.id === prof.id
+        let query = supabase
+          .from('shelf_entries')
+          .select('id, status, rating, review, watched_at, is_public, rewatch_count, film:films(id, tmdb_id, title, release_year, poster_url, runtime_minutes, avg_rating, ratings_count)')
+          .eq('user_id', prof.id)
+        if (!isOwn) query = query.eq('is_public', true)
 
-      const { data } = await query.order('watched_at', { ascending: false })
-      setEntries(data ?? [])
-      setLoading(false)
+        const { data } = await query.order('watched_at', { ascending: false })
+        setEntries(data ?? [])
+      } catch (err) {
+        console.error('Error fetching shelf entries:', err)
+      } finally {
+        setLoading(false)
+      }
     }
     fetchData()
   }, [username])
@@ -206,6 +211,23 @@ export default function ShelfPage({ params }: { params: Promise<{ username: stri
                         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                       </svg>
                       {entry.rating.toFixed(1)}
+                    </div>
+                  )}
+                  {entry.best_actor_name && (
+                    <div className={styles.listBestActor}>
+                      <div className={styles.listBestActorAvatarWrap}>
+                        {entry.best_actor_profile_path ? (
+                          <img
+                            src={entry.best_actor_profile_path}
+                            alt={entry.best_actor_name}
+                            className={styles.listBestActorAvatar}
+                          />
+                        ) : (
+                          <div className={styles.listBestActorAvatarFallback}>👤</div>
+                        )}
+                      </div>
+                      <span className={styles.listBestActorLabel}>Atuação favorita:</span>
+                      <span className={styles.listBestActorName}>{entry.best_actor_name}</span>
                     </div>
                   )}
                   {entry.review && <p className={styles.listReview}>{entry.review}</p>}

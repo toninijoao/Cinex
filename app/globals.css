@@ -167,7 +167,7 @@ ul, ol {
 .page-wrapper {
   min-height: 100vh;
   background: var(--cx-bg);
-  padding-top: 52px; /* Navbar height */
+  padding-top: 92px; /* Navbar height */
 }
 
 .container {

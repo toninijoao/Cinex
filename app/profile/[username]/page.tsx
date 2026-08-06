@@ -38,80 +38,83 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true)
+      try {
+        const [{ data: prof }, { data: { user: authUser } }] = await Promise.all([
+          supabase.from('users').select('*').eq('username', username).single(),
+          supabase.auth.getUser(),
+        ])
 
-      const [{ data: prof }, { data: { user: authUser } }] = await Promise.all([
-        supabase.from('users').select('*').eq('username', username).single(),
-        supabase.auth.getUser(),
-      ])
+        if (!prof) { return }
+        setProfile(prof)
+        setCurrentUser(authUser)
 
-      if (!prof) { setLoading(false); return }
-      setProfile(prof)
-      setCurrentUser(authUser)
-
-      // Recent shelf entries
-      const { data: entries } = await supabase
-        .from('shelf_entries')
-        .select('rating, film:films(tmdb_id, title, poster_url)')
-        .eq('user_id', prof.id)
-        .eq('status', 'watched')
-        .order('watched_at', { ascending: false })
-        .limit(10)
-      setRecentEntries(entries ?? [])
-
-      // Fetch favorite films
-      const { data: favFilms } = await supabase
-        .from('user_favorite_films')
-        .select('position, film_id, film:films(tmdb_id, title, poster_url)')
-        .eq('user_id', prof.id)
-        .order('position', { ascending: true })
-
-      const filmIds = favFilms?.map(f => f.film_id) ?? []
-      let ratingsMap: Record<string, number | null> = {}
-      if (filmIds.length > 0) {
-        const { data: ratingsData } = await supabase
+        // Recent shelf entries
+        const { data: entries } = await supabase
           .from('shelf_entries')
-          .select('film_id, rating')
+          .select('rating, best_actor_tmdb_id, best_actor_name, best_actor_profile_path, film:films(tmdb_id, title, poster_url)')
           .eq('user_id', prof.id)
-          .in('film_id', filmIds)
+          .eq('status', 'watched')
+          .order('watched_at', { ascending: false })
+          .limit(10)
+        setRecentEntries(entries ?? [])
 
-        ratingsData?.forEach(r => {
-          ratingsMap[r.film_id] = r.rating
-        })
+        // Fetch favorite films
+        const { data: favFilms } = await supabase
+          .from('user_favorite_films')
+          .select('position, film_id, film:films(tmdb_id, title, poster_url)')
+          .eq('user_id', prof.id)
+          .order('position', { ascending: true })
+
+        const filmIds = favFilms?.map(f => f.film_id) ?? []
+        let ratingsMap: Record<string, number | null> = {}
+        if (filmIds.length > 0) {
+          const { data: ratingsData } = await supabase
+            .from('shelf_entries')
+            .select('film_id, rating')
+            .eq('user_id', prof.id)
+            .in('film_id', filmIds)
+
+          ratingsData?.forEach(r => {
+            ratingsMap[r.film_id] = r.rating
+          })
+        }
+
+        const mappedFavFilms = (favFilms ?? []).map((fav: any) => ({
+          ...fav,
+          rating: ratingsMap[fav.film_id] ?? null
+        }))
+        setFavoriteFilms(mappedFavFilms)
+
+        // Fetch favorite actors
+        const { data: favActors } = await supabase
+          .from('user_favorite_actors')
+          .select('*')
+          .eq('user_id', prof.id)
+          .order('position', { ascending: true })
+        setFavoriteActors(favActors ?? [])
+
+        // Follow counts
+        const [{ count: followers }, { count: following }] = await Promise.all([
+          supabase.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', prof.id),
+          supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', prof.id),
+        ])
+        setFollowersCount(followers ?? 0)
+        setFollowingCount(following ?? 0)
+
+        if (authUser) {
+          const { data: followRow } = await supabase
+            .from('follows')
+            .select('follower_id')
+            .eq('follower_id', authUser.id)
+            .eq('following_id', prof.id)
+            .single()
+          setIsFollowing(!!followRow)
+        }
+      } catch (err) {
+        console.error('Error fetching profile data:', err)
+      } finally {
+        setLoading(false)
       }
-
-      const mappedFavFilms = (favFilms ?? []).map((fav: any) => ({
-        ...fav,
-        rating: ratingsMap[fav.film_id] ?? null
-      }))
-      setFavoriteFilms(mappedFavFilms)
-
-      // Fetch favorite actors
-      const { data: favActors } = await supabase
-        .from('user_favorite_actors')
-        .select('*')
-        .eq('user_id', prof.id)
-        .order('position', { ascending: true })
-      setFavoriteActors(favActors ?? [])
-
-      // Follow counts
-      const [{ count: followers }, { count: following }] = await Promise.all([
-        supabase.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', prof.id),
-        supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', prof.id),
-      ])
-      setFollowersCount(followers ?? 0)
-      setFollowingCount(following ?? 0)
-
-      if (authUser) {
-        const { data: followRow } = await supabase
-          .from('follows')
-          .select('follower_id')
-          .eq('follower_id', authUser.id)
-          .eq('following_id', prof.id)
-          .single()
-        setIsFollowing(!!followRow)
-      }
-
-      setLoading(false)
     }
     fetchData()
   }, [username])
@@ -165,7 +168,10 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
     const filmToCache = {
       tmdb_id: json.film.tmdb_id,
       title: json.film.title,
+      original_title: json.film.original_title,
       release_year: json.film.release_year,
+      runtime_minutes: json.film.runtime_minutes,
+      synopsis: json.film.synopsis,
       poster_url: json.film.poster_url,
       backdrop_url: json.film.backdrop_url,
       trailer_url: json.film.trailer_url,

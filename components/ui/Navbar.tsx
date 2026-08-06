@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { getHighResAvatarUrl } from '@/lib/avatar'
 import styles from './Navbar.module.css'
@@ -19,8 +19,6 @@ export default function Navbar() {
   const [user, setUser] = useState<{ username?: string; avatar_url?: string; display_name?: string } | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchFocused, setSearchFocused] = useState(false)
-  const [menuOpen, setMenuOpen] = useState(false)
-  const menuRef = useRef<HTMLDivElement>(null)
   const supabase = createClient()
 
   useEffect(() => {
@@ -41,15 +39,7 @@ export default function Navbar() {
     return () => subscription.unsubscribe()
   }, [])
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -62,7 +52,6 @@ export default function Navbar() {
   const handleSignOut = async () => {
     await supabase.auth.signOut()
     setUser(null)
-    setMenuOpen(false)
     router.push('/')
     router.refresh()
   }
@@ -72,9 +61,7 @@ export default function Navbar() {
       <div className={styles.inner}>
         {/* Logo */}
         <Link href="/" className={styles.logo} aria-label="Cinex - Página inicial">
-          <span className={styles.logoC}>C</span>
-          <span className={styles.logoI}>I</span>
-          <span className={styles.logoNEX}>NEX</span>
+          <img src="/original_com_texto.png" alt="Cinex" className={styles.logoImage} />
         </Link>
 
         {/* Nav links */}
@@ -115,14 +102,12 @@ export default function Navbar() {
 
           {/* Auth */}
           {user ? (
-            <div className={styles.userMenu} ref={menuRef}>
-              <button
+            <div className={styles.userMenu}>
+              <Link
                 id="navbar-avatar-btn"
                 className={styles.avatar}
-                onClick={() => setMenuOpen(v => !v)}
-                aria-expanded={menuOpen}
-                aria-haspopup="true"
-                aria-label="Menu do usuário"
+                href={`/profile/${user.username}`}
+                aria-label="Meu perfil"
               >
                 {user.avatar_url ? (
                   <img src={getHighResAvatarUrl(user.avatar_url) || ''} alt={user.display_name ?? user.username ?? ''} />
@@ -131,31 +116,10 @@ export default function Navbar() {
                     {(user.display_name ?? user.username ?? 'U')[0].toUpperCase()}
                   </span>
                 )}
+              </Link>
+              <button className={styles.logoutBtn} onClick={handleSignOut}>
+                Sair
               </button>
-
-              {menuOpen && (
-                <div className={styles.dropdown} role="menu">
-                  <Link href={`/profile/${user.username}`} className={styles.dropdownItem} role="menuitem" onClick={() => setMenuOpen(false)}>
-                    Meu Perfil
-                  </Link>
-                  <Link href={`/profile/${user.username}/shelf`} className={styles.dropdownItem} role="menuitem" onClick={() => setMenuOpen(false)}>
-                    Minha Estante
-                  </Link>
-                  <Link href={`/profile/${user.username}/stats`} className={styles.dropdownItem} role="menuitem" onClick={() => setMenuOpen(false)}>
-                    Estatísticas
-                  </Link>
-                  <Link href="/notifications" className={styles.dropdownItem} role="menuitem" onClick={() => setMenuOpen(false)}>
-                    Notificações
-                  </Link>
-                  <Link href="/settings" className={styles.dropdownItem} role="menuitem" onClick={() => setMenuOpen(false)}>
-                    Configurações
-                  </Link>
-                  <hr className={styles.dropdownDivider} />
-                  <button className={styles.dropdownItem} role="menuitem" onClick={handleSignOut}>
-                    Sair
-                  </button>
-                </div>
-              )}
             </div>
           ) : (
             <div className={styles.authButtons}>

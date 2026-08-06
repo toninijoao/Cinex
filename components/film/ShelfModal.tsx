@@ -37,6 +37,7 @@ interface ShelfModalProps {
     watched_at: string | null
     best_actor_tmdb_id?: number | null
     best_actor_name?: string | null
+    best_actor_profile_path?: string | null
   } | null
   onSaved?: () => void
 }
@@ -67,6 +68,7 @@ export default function ShelfModal({
   const [review, setReview]     = useState(existingEntry?.review ?? '')
   const [bestActorTmdbId, setBestActorTmdbId] = useState<number | null>(existingEntry?.best_actor_tmdb_id ?? null)
   const [bestActorName, setBestActorName] = useState<string | null>(existingEntry?.best_actor_name ?? null)
+  const [bestActorProfilePath, setBestActorProfilePath] = useState<string | null>(existingEntry?.best_actor_profile_path ?? null)
   const [cast, setCast] = useState<any[]>([])
   const [loadingCast, setLoadingCast] = useState(false)
   const [loading, setLoading]   = useState(false)
@@ -80,12 +82,14 @@ export default function ShelfModal({
       setReview(existingEntry.review ?? '')
       setBestActorTmdbId(existingEntry.best_actor_tmdb_id ?? null)
       setBestActorName(existingEntry.best_actor_name ?? null)
+      setBestActorProfilePath(existingEntry.best_actor_profile_path ?? null)
     } else {
       setStatus('watched')
       setRating(0)
       setReview('')
       setBestActorTmdbId(null)
       setBestActorName(null)
+      setBestActorProfilePath(null)
     }
     setError(null)
   }, [film.tmdb_id, existingEntry])
@@ -182,6 +186,7 @@ export default function ShelfModal({
         watched_at: showDate ? todayString() : null,
         best_actor_tmdb_id: showRating ? bestActorTmdbId : null,
         best_actor_name: showRating ? bestActorName : null,
+        best_actor_profile_path: showRating ? bestActorProfilePath : null,
       }
 
       const { error: upsertErr } = await supabase
@@ -321,9 +326,11 @@ export default function ShelfModal({
                         if (isSelected) {
                           setBestActorTmdbId(null)
                           setBestActorName(null)
+                          setBestActorProfilePath(null)
                         } else {
                           setBestActorTmdbId(actor.tmdb_id)
                           setBestActorName(actor.name)
+                          setBestActorProfilePath(actor.profile_url)
                         }
                       }}
                     >
